@@ -4,7 +4,13 @@ buildscript {
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:2.0.5.RELEASE")
+        classpath("net.saliman:gradle-cobertura-plugin:2.6.0")
     }
+}
+
+plugins {
+    id 'com.github.kt3k.coveralls' version '2.8.2'
+    id 'java'
 }
 
 apply plugin: 'java'
@@ -12,6 +18,8 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'net.saliman.cobertura'
+apply plugin: 'jacoco'
 
 bootJar {
     baseName = 'gs-batch-processing'
@@ -31,3 +39,23 @@ dependencies {
     testCompile("junit:junit")
 }
 
+jacocoTestReport {
+    reports {
+        xml {
+            enabled true // coveralls plugin depends on xml format report
+        }
+
+        html {
+            enabled true
+        }
+    }
+
+    afterEvaluate {
+        classDirectories = files(classDirectories.files.collect {
+            fileTree(dir: it,
+                    exclude: ['**/data/**'])
+        })
+    }
+}
+
+cobertura.coverageFormats = ['html', 'xml'] // coveralls plugin depends on xml format report
